@@ -1,6 +1,7 @@
 import nltk
 import torch
 import json
+import string
 import gensim.downloader as api
 
 from pathlib import Path
@@ -35,7 +36,7 @@ def normalize_token(word) -> str:
         return word.lower()
     if word.capitalize() in wv:
         return word.capitalize()
-    return word
+    return "<UNK>"
 
 def merge_possessives(tokens) -> list[str]:
     merged = []
@@ -57,6 +58,12 @@ def process_tokens(dataset: list[dict[str, list]]) -> list[dict[str, list]]:
             tokens = processed_sample[key]
 
             tokens = merge_possessives(tokens)
+            
+            #Get rid of punctuation
+            tokens = [
+                token for token in tokens
+                if not all(char in string.punctuation for char in token)
+            ]
 
             tokens = [normalize_token(token) for token in tokens]
 
@@ -69,7 +76,8 @@ def process_tokens(dataset: list[dict[str, list]]) -> list[dict[str, list]]:
 def build_vocabulary(dataset):
     vocab = {
         "<PAD>": 0,
-        "<UNK>": 1
+        "<UNK>": 1,
+        "<SEP>": 2
     }
 
     for sample in dataset:
