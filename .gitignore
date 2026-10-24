@@ -221,3 +221,9 @@ __marimo__/
 
 # Project Data
 data/
+
+#Models
+checkpoints/
+
+#wandb
+wandb/
