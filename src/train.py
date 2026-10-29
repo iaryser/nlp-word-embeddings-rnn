@@ -4,21 +4,38 @@ import wandb
 from pathlib import Path
 from torch.optim import Adam
 import random
+import argparse
 import numpy as np
 
 from models.embedding_classifier import EmbeddingClassifier
-from data_loading import load_embeddings, load_data
+from models.lstm import LSTMClassifier
+from data_loading import load_embeddings, load_data, collate_fn_classifier, collate_fn_lstm
 
-batch_size = 64
 embedding_dim = 300
-inner_dim = 256
 output_dim = 2
-learning_rate = 0.001
-num_epochs = 30
-dropout_rate = 0.3
 
-def main():
-    seed = 42
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--model", choices=["classifier", "lstm"],
+                        default="classifier")
+    parser.add_argument("--learning_rate", type=float, default=0.001)
+    parser.add_argument("--dropout", type=float, default=0.3)
+    parser.add_argument("--classifier_hidden_dim", type=int, default=256)
+    parser.add_argument("--hidden_dim", type=int, default=128)
+    parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--patience", type=int, default=5)
+    parser.add_argument("--num_epochs", type=int, default=30)
+    parser.add_argument(
+    "--bidirectional",
+    action=argparse.BooleanOptionalAction,
+    default=True
+    )
+
+    return parser.parse_args()
+
+def main(args):
+    seed = 42 #TODO: seed shuffling is also one thing i want to try out
 
     random.seed(seed)
     np.random.seed(seed)
@@ -27,44 +44,70 @@ def main():
     
     checkpoint_dir = Path("checkpoints")
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-
-    run_name = "word2vec-classifier-dropout-03"
-    checkpoint_path = checkpoint_dir / f"{run_name}.pt"
     
-    wandb.init(
-    project="nlp-art-project-1",
-    name=run_name,
-    config={
-        "batch_size": batch_size,
-        "embedding_dim": embedding_dim,
-        "inner_dim": inner_dim,
-        "learning_rate": learning_rate,
-        "num_epochs": num_epochs,
-        "dropout": dropout_rate,
-        "optimizer": "Adam"
-        }
-    )
-    
-    model = EmbeddingClassifier(
-        load_embeddings(),
-        embedding_dim * 4,
-        inner_dim,
-        output_dim,
-        dropout_rate
+    run = wandb.init(
+        project="nlp-art-project-1",
+        config=vars(args)
     )
 
-    train_loader = load_data("Train", batch_size)
-    valid_loader = load_data("Validation", batch_size)
+    config = wandb.config
+    checkpoint_path = checkpoint_dir / f"{run.id}.pt"
     
-    optimizer = Adam(model.parameters(), lr=learning_rate)
+    if config.model == 'classifier':
+        run.name = (
+            f"{config.model}"
+            f"-lr{config.learning_rate}"
+            f"-drop{config.dropout}"
+            f"-hidden{config.classifier_hidden_dim}"
+        )
+    else:
+        run.name = (
+            f"{config.model}"
+            f"-lr{config.learning_rate}"
+            f"-drop{config.dropout}"
+            f"-hidden{config.hidden_dim}"
+            f"-class_hidden{config.classifier_hidden_dim}"
+            f"-bidi{config.bidirectional}"
+        )
+    
+    embedding_matrix = load_embeddings()
+    
+    if config.model == "classifier":
+        model = EmbeddingClassifier(
+            embedding_matrix,
+            embedding_dim * 4,
+            config.classifier_hidden_dim,
+            output_dim,
+            config.dropout
+        )
+
+    else:
+        model = LSTMClassifier(
+            embedding_matrix,
+            embedding_dim,
+            config.hidden_dim,
+            config.classifier_hidden_dim,
+            output_dim,
+            config.bidirectional,
+            dropout_rate=config.dropout
+        )
+    
+    if config.model == "classifier":
+        collate_fn = collate_fn_classifier
+    else:
+        collate_fn = collate_fn_lstm
+    
+    train_loader = load_data("Train", config.batch_size, collate_fn)
+    valid_loader = load_data("Validation", config.batch_size, collate_fn)
+    
+    optimizer = Adam(model.parameters(), lr=config.learning_rate)
     criterion = nn.CrossEntropyLoss()
     
     best_valid_accuracy = 0.0
     best_epoch = 0
-    patience = 10
     epochs_without_improvement = 0
 
-    for epoch in range(num_epochs):
+    for epoch in range(config.num_epochs):
         
         model.train()
         
@@ -132,7 +175,7 @@ def main():
             epochs_without_improvement += 1
         
         print( 
-            f"Epoch {epoch + 1}/{num_epochs} | "
+            f"Epoch {epoch + 1}/{config.num_epochs} | "
             f"Train Loss: {train_loss:.4f} | "
             f"Train Acc: {train_accuracy:.2%} | "
             f"Valid Loss: {valid_loss:.4f} | "
@@ -140,7 +183,7 @@ def main():
         )
         
         # Early stopping
-        if epochs_without_improvement >= patience:
+        if epochs_without_improvement >= config.patience:
             print(f"Early stopping at epoch {epoch + 1}")
             break
         
@@ -149,4 +192,5 @@ def main():
     wandb.finish()
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    main(args)
