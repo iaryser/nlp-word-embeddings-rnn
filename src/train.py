@@ -55,6 +55,8 @@ def main(args):
     
     embedding_matrix = load_embeddings()
     
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     if config.model == 'classifier':
         run.name = (
             f"{config.model}"
@@ -70,6 +72,7 @@ def main(args):
             output_dim,
             config.dropout
         )
+        model = model.to(device)
         
         collate_fn = collate_fn_classifier
 
@@ -92,6 +95,7 @@ def main(args):
             config.bidirectional,
             dropout_rate=config.dropout
         )
+        model = model.to(device)
         
         collate_fn = collate_fn_lstm
         
@@ -115,6 +119,11 @@ def main(args):
         total = 0
 
         for batch in train_loader:
+            batch = {
+                key: value.to(device) if torch.is_tensor(value) else value
+                for key, value in batch.items()
+            }
+            
             logits = model(batch)
             labels = batch["labels"]
 
@@ -139,6 +148,10 @@ def main(args):
 
         with torch.no_grad():
             for batch in valid_loader:
+                batch = {
+                    key: value.to(device) if torch.is_tensor(value) else value
+                    for key, value in batch.items()
+                }
                 logits = model(batch)
                 labels = batch["labels"]
 
