@@ -36,6 +36,56 @@ def collate_fn_classifier(batch):
     )
     return padded
 
+
+def collate_fn_lstm_pair(batch):
+    sequences_1 = []
+    sequences_2 = []
+    
+    for sample in batch:
+        sequence_1 = (
+            sample["observation_1"] + [SEP_TOKEN]
+            + sample["hypothesis_1"] + [SEP_TOKEN]
+            + sample["observation_2"]
+        )
+        
+        sequence_2 = (
+            sample["observation_1"] + [SEP_TOKEN]
+            + sample["hypothesis_2"] + [SEP_TOKEN]
+            + sample["observation_2"]
+        )
+        
+        sequences_1.append(torch.tensor(sequence_1))
+        sequences_2.append(torch.tensor(sequence_2))
+        
+    lengths_1 = torch.tensor([len(seq) for seq in sequences_1])
+    lengths_2 = torch.tensor([len(seq) for seq in sequences_2])
+    
+    padded_1 = pad_sequence(
+        sequences_1,
+        batch_first=True,
+        padding_value=PAD_TOKEN
+    )
+    
+    padded_2 = pad_sequence(
+        sequences_2,
+        batch_first=True,
+        padding_value=PAD_TOKEN
+    )
+    
+    labels = torch.tensor(
+        [sample["label"] for sample in batch],
+        dtype=torch.long
+    )
+    
+    return {
+        "sequence_1": padded_1,
+        "sequence_2": padded_2,
+        "lengths_1": lengths_1,
+        "lengths_2": lengths_2,
+        "labels": labels
+    }
+        
+
 def collate_fn_lstm(batch):
     sequences = []
     for sample in batch:
@@ -83,5 +133,7 @@ def load_data(type: str, batch_size: int, collate_fn):
         shuffle=(type == "Train")
     )
 
-    
-    
+if __name__ == "__main__":
+    train_loader = load_data("Train", 64, collate_fn_concatenated_lstm)
+    for batch in train_loader:
+        break

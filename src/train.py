@@ -9,7 +9,7 @@ import numpy as np
 
 from models.embedding_classifier import EmbeddingClassifier
 from models.lstm import LSTMClassifier
-from data_loading import load_embeddings, load_data, collate_fn_classifier, collate_fn_lstm
+from data_loading import load_embeddings, load_data, collate_fn_classifier, collate_fn_lstm, collate_fn_lstm_pair
 
 embedding_dim = 300
 output_dim = 2
@@ -31,6 +31,7 @@ def parse_args():
         type=lambda x: x.lower() == "true",
         default=True
     )
+    parser.add_argument("--input_mode", type=str, default="single")
 
     return parser.parse_args()
 
@@ -79,13 +80,14 @@ def main(args):
     else:
         run.name = (
             f"{config.model}"
+            f"-input_mode{config.input_mode}"
             f"-lr{config.learning_rate}"
             f"-drop{config.dropout}"
             f"-hidden{config.hidden_dim}"
             f"-class_hidden{config.classifier_hidden_dim}"
             f"-bidi{config.bidirectional}"
         )
-        
+            
         model = LSTMClassifier(
             embedding_matrix,
             embedding_dim,
@@ -93,11 +95,15 @@ def main(args):
             config.classifier_hidden_dim,
             output_dim,
             config.bidirectional,
-            dropout_rate=config.dropout
+            dropout_rate=config.dropout,
+            input_mode=config.input_mode
         )
         model = model.to(device)
         
-        collate_fn = collate_fn_lstm
+        if config.input_mode == "single":
+            collate_fn = collate_fn_lstm
+        else:
+            collate_fn = collate_fn_lstm_pair
         
     
     train_loader = load_data("Train", config.batch_size, collate_fn)
