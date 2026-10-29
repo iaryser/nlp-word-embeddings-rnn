@@ -62,8 +62,8 @@ class LSTMClassifier(nn.Module):
         else:
             seq_1 = batch["sequence_1"]
             seq_2 = batch["sequence_2"]
-            len_1 = batch["lengths_1"]
-            len_2 = batch["lengths_2"]
+            len_1 = batch["lengths_1"].cpu()
+            len_2 = batch["lengths_2"].cpu()
             
             embeddings_1 = self.embeddings(seq_1)
             embeddings_2 = self.embeddings(seq_2)
