@@ -1,4 +1,4 @@
-program: train.py
+program: src/train.py
 project: nlp-art-project-1
 name: uni-lstm-hyperparameter-search
 
@@ -11,6 +11,9 @@ metric:
 parameters:
   model:
     value: lstm
+
+  input_mode:
+    values: [single, pair]
 
   learning_rate:
     values: [1e-5, 1e-4, 1e-3]
@@ -35,3 +38,9 @@ parameters:
 
   bidirectional:
     value: false
+
+command:
+  - uv
+  - run
+  - ${program}
+  - ${args}

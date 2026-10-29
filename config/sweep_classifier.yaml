@@ -1,4 +1,4 @@
-program: train.py
+program: src/train.py
 project: nlp-art-project-1
 name: classifier-hyperparameter-search
 
@@ -29,3 +29,9 @@ parameters:
 
   num_epochs:
     value: 30
+
+command:
+  - uv
+  - run
+  - ${program}
+  - ${args}
