@@ -1,7 +1,8 @@
 program: train.py
-name: lstm-hyperparameter-search
+project: nlp-art-project-1
+name: bidi-lstm-hyperparameter-search
 
-method: bayes
+method: grid
 
 metric:
   name: best_valid_accuracy
@@ -12,7 +13,7 @@ parameters:
     value: lstm
 
   learning_rate:
-    values: [0.0001, 0.0003, 0.001]
+    values: [1e-5, 1e-4, 1e-3] #TODO: binary search once you figured out the best one
 
   dropout:
     values: [0.2, 0.3, 0.5]
@@ -30,7 +31,7 @@ parameters:
     value: 64
 
   num_epochs:
-    value: 30
+    value: 50
 
   bidirectional:
     value: true

@@ -38,7 +38,7 @@ class LSTMClassifier(nn.Module):
         sequences = batch["input_ids"]
         lengths = batch["lengths"].cpu()
                 
-        embeddings = self.embeddings[sequences]
+        embeddings = self.embeddings(sequences)
 
         packed_embeddings = pack_padded_sequence(
             embeddings,

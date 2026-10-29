@@ -23,13 +23,13 @@ def parse_args():
     parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--classifier_hidden_dim", type=int, default=256)
     parser.add_argument("--hidden_dim", type=int, default=128)
-    parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--patience", type=int, default=5)
-    parser.add_argument("--num_epochs", type=int, default=30)
+    parser.add_argument("--num_epochs", type=int, default=50)
     parser.add_argument(
-    "--bidirectional",
-    action=argparse.BooleanOptionalAction,
-    default=True
+        "--bidirectional",
+        type=lambda x: x.lower() == "true",
+        default=True
     )
 
     return parser.parse_args()
@@ -53,6 +53,8 @@ def main(args):
     config = wandb.config
     checkpoint_path = checkpoint_dir / f"{run.id}.pt"
     
+    embedding_matrix = load_embeddings()
+    
     if config.model == 'classifier':
         run.name = (
             f"{config.model}"
@@ -60,6 +62,17 @@ def main(args):
             f"-drop{config.dropout}"
             f"-hidden{config.classifier_hidden_dim}"
         )
+        
+        model = EmbeddingClassifier(
+            embedding_matrix,
+            embedding_dim * 4,
+            config.classifier_hidden_dim,
+            output_dim,
+            config.dropout
+        )
+        
+        collate_fn = collate_fn_classifier
+
     else:
         run.name = (
             f"{config.model}"
@@ -69,19 +82,7 @@ def main(args):
             f"-class_hidden{config.classifier_hidden_dim}"
             f"-bidi{config.bidirectional}"
         )
-    
-    embedding_matrix = load_embeddings()
-    
-    if config.model == "classifier":
-        model = EmbeddingClassifier(
-            embedding_matrix,
-            embedding_dim * 4,
-            config.classifier_hidden_dim,
-            output_dim,
-            config.dropout
-        )
-
-    else:
+        
         model = LSTMClassifier(
             embedding_matrix,
             embedding_dim,
@@ -91,11 +92,9 @@ def main(args):
             config.bidirectional,
             dropout_rate=config.dropout
         )
-    
-    if config.model == "classifier":
-        collate_fn = collate_fn_classifier
-    else:
+        
         collate_fn = collate_fn_lstm
+        
     
     train_loader = load_data("Train", config.batch_size, collate_fn)
     valid_loader = load_data("Validation", config.batch_size, collate_fn)
