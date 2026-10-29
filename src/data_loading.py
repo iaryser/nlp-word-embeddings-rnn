@@ -10,11 +10,12 @@ DATASET_KEYS = [
 ]
 
 PAD_TOKEN = 0
+SEP_TOKEN = 2
  
 def load_embeddings():
     return torch.load("data/processed/embeddings.pt", weights_only=True)
     
-def collate_fn(batch):
+def collate_fn_classifier(batch):
     padded = {}
 
     for key in DATASET_KEYS:
@@ -33,30 +34,54 @@ def collate_fn(batch):
         [sample["label"] for sample in batch],
         dtype=torch.long
     )
-
     return padded
+
+def collate_fn_lstm(batch):
+    sequences = []
+    for sample in batch:
+        sequence = (
+            sample["observation_1"] + [SEP_TOKEN]
+            + sample["hypothesis_1"] + [SEP_TOKEN]
+            + sample["hypothesis_2"] + [SEP_TOKEN]
+            + sample["observation_2"]
+        )
         
-def load_data(type: str, batch_size: int):
+        sequences.append(torch.tensor(sequence, dtype=torch.long))
+    
+    #Actual lengths of each sequence (for LSTM)
+    lengths = torch.tensor([len(seq) for seq in sequences])    
+    
+    padded = pad_sequence(
+        sequences,
+        batch_first=True,# [batch_size, seq_len]
+        padding_value=PAD_TOKEN
+    )
+    
+    labels = torch.tensor(
+        [sample["label"] for sample in batch],
+        dtype=torch.long
+    )
+    
+    return {
+        "input_ids": padded,
+        "lengths": lengths,
+        "labels": labels
+    }
+        
+def load_data(type: str, batch_size: int, collate_fn):
     
     datasets = {
     "Train": torch.load("data/processed/train.pt", weights_only=True),
     "Validation": torch.load("data/processed/valid.pt", weights_only=True),
     "Test": torch.load("data/processed/test.pt", weights_only=True)
     }
-    
-    loader = DataLoader(
+
+    return DataLoader(
         datasets[type],
         batch_size=batch_size,
         collate_fn=collate_fn,
         shuffle=(type == "Train")
     )
-    
-    return loader
-    
-if __name__ == "__main__":    
-    train_loader = load_data("Train", 64)
-    valid_loader = load_data("Validation", 64)
-    test_loader = load_data("Test", 64)
-    
+
     
     
