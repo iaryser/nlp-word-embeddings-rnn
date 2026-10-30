@@ -113,7 +113,7 @@ def main(args):
     optimizer = Adam(model.parameters(), lr=config.learning_rate)
     criterion = nn.CrossEntropyLoss()
     
-    best_valid_accuracy = 0.0
+    best_valid_accuracy = -1.0
     best_epoch = 0
     epochs_without_improvement = 0
 
@@ -183,11 +183,11 @@ def main(args):
         # Save model if validation accuracy improves
         if valid_accuracy > best_valid_accuracy:
             best_valid_accuracy = valid_accuracy
+            valid_loss_best_accuracy = valid_loss
             best_epoch = epoch + 1
             epochs_without_improvement = 0
 
             torch.save(model.state_dict(), checkpoint_path)
-
             print(f"New best model saved (valid accuracy: {valid_accuracy:.2%})")
 
         else:
@@ -205,7 +205,8 @@ def main(args):
         if epochs_without_improvement >= config.patience:
             print(f"Early stopping at epoch {epoch + 1}")
             break
-        
+    
+    wandb.summary["valid_loss_at_best_accuracy"] = valid_loss_best_accuracy
     wandb.summary["best_valid_accuracy"] = best_valid_accuracy
     wandb.summary["best_epoch"] = best_epoch
     wandb.finish()
