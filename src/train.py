@@ -26,6 +26,7 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--num_epochs", type=int, default=50)
+    parser.add_argument("--optimizer", type=str, default="Adam")
     parser.add_argument(
         "--bidirectional",
         type=lambda x: x.lower() == "true",
