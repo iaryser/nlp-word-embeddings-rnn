@@ -38,10 +38,10 @@ parameters:
     value: 128
 
   patience:
-    value: 5
+    value: 10
 
   num_epochs:
-    value: 40
+    value: 50
 
 command:
   - uv
