@@ -34,6 +34,7 @@ def parse_args():
     )
     parser.add_argument("--input_mode", type=str, default="single")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--run_id", type=str, default=None)
 
     return parser.parse_args()
 
@@ -50,6 +51,7 @@ def main(args):
     
     run = wandb.init(
         project="nlp-art-project-1",
+        id=args.run_id,
         config=vars(args)
     )
 

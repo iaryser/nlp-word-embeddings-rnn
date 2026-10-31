@@ -1,0 +1,39 @@
+
+[
+  {
+    "model": "classifier",
+    "learning_rate": 0.001,
+    "dropout": 0.5,
+    "classifier_hidden_dim": 512,
+    "batch_size": 128,
+    "seed": 42,
+    "patience": 5,
+    "num_epochs": 30
+  },
+  {
+    "model": "lstm",
+    "input_mode": "pair",
+    "bidirectional": false,
+    "learning_rate": 0.0001,
+    "dropout": 0.2,
+    "hidden_dim": 256,
+    "classifier_hidden_dim": 256,
+    "batch_size": 128,
+    "seed": 42,
+    "patience": 5,
+    "num_epochs": 50
+  },
+  {
+    "model": "lstm",
+    "input_mode": "pair",
+    "bidirectional": true,
+    "learning_rate": 0.001,
+    "dropout": 0.3,
+    "hidden_dim": 256,
+    "classifier_hidden_dim": 128,
+    "batch_size": 128,
+    "seed": 42,
+    "patience": 5,
+    "num_epochs": 50
+  }
+]
