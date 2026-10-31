@@ -1,0 +1,40 @@
+program: src/train.py
+project: nlp-art-project-1
+name: classifier-seed-shuffling
+
+method: grid
+
+metric:
+  name: best_valid_accuracy
+  goal: maximize
+
+parameters:
+  model:
+    value: classifier
+
+  learning_rate:
+    value: 0.001
+
+  dropout:
+    value: 0.5
+
+  classifier_hidden_dim:
+    value: 512
+
+  patience:
+    value: 3
+
+  seed:
+    values: [42, 123, 456, 789, 2026, 300, 10, 12, 13, 99]
+
+  batch_size:
+    value: 128
+
+  num_epochs:
+    value: 30
+
+command:
+  - uv
+  - run
+  - ${program}
+  - ${args}
