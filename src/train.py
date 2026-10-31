@@ -11,7 +11,7 @@ from models.embedding_classifier import EmbeddingClassifier
 from models.lstm import LSTMClassifier
 from data_loading import load_embeddings, load_data, collate_fn_classifier, collate_fn_lstm, collate_fn_lstm_pair
 
-embedding_dim = 300
+embedding_dim = 300 
 output_dim = 2
 
 def parse_args():
@@ -33,12 +33,13 @@ def parse_args():
         default=True
     )
     parser.add_argument("--input_mode", type=str, default="single")
+    parser.add_argument("--seed", type=int, default=42)
 
     return parser.parse_args()
 
 def main(args):
-    seed = 42 #TODO: seed shuffling is also one thing i want to try out
-
+    seed = args.seed
+    
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -65,6 +66,7 @@ def main(args):
             f"-lr{config.learning_rate}"
             f"-drop{config.dropout}"
             f"-hidden{config.classifier_hidden_dim}"
+            f"-seed{config.seed}"
         )
         
         model = EmbeddingClassifier(
@@ -87,6 +89,7 @@ def main(args):
             f"-hidden{config.hidden_dim}"
             f"-class_hidden{config.classifier_hidden_dim}"
             f"-bidi{config.bidirectional}"
+            f"-seed{config.seed}"
         )
             
         model = LSTMClassifier(

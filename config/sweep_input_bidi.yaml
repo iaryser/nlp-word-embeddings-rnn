@@ -1,0 +1,50 @@
+
+program: src/train.py
+project: nlp-art-project-1
+name: bidi-input-comparison
+
+method: grid
+
+metric:
+  name: best_valid_accuracy
+  goal: maximize
+
+parameters:
+  model:
+    value: lstm
+
+  bidirectional:
+    value: true
+
+  input_mode:
+    values: [single, pair]
+
+  seed:
+    values: [42, 123, 456, 789, 2026, 300, 10, 12, 13, 99]
+
+  hidden_dim:
+    value: 256
+
+  classifier_hidden_dim:
+    value: 128
+
+  dropout:
+    value: 0.3
+
+  learning_rate:
+    value: 0.001
+
+  batch_size:
+    value: 128
+
+  patience:
+    value: 5
+
+  num_epochs:
+    value: 40
+
+command:
+  - uv
+  - run
+  - ${program}
+  - ${args}
