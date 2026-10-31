@@ -7,7 +7,7 @@
     "classifier_hidden_dim": 512,
     "batch_size": 128,
     "seed": 42,
-    "patience": 5,
+    "patience": 3,
     "num_epochs": 30
   },
   {

@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-import wandb
+import secrets
 
 
 ROOT = Path(__file__).resolve().parent
@@ -45,7 +45,7 @@ def train_models():
     run_ids = []
 
     for index, config in enumerate(configs, start=1):
-        run_id = wandb.util.generate_id()
+        run_id = secrets.token_hex(4)
 
         print(f"\nTraining model {index}/{len(configs)}")
         print(f"Run ID: {run_id}")
