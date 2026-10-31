@@ -1,0 +1,46 @@
+program: src/train.py
+project: nlp-art-project-1
+name: uni-gru-hyperparameter-search
+
+method: grid
+
+metric:
+  name: best_valid_accuracy
+  goal: maximize
+
+parameters:
+  model:
+    value: gru
+
+  input_mode:
+    values: [single, pair]
+
+  learning_rate:
+    values: [1e-5, 1e-4, 1e-3]
+
+  dropout:
+    values: [0.2, 0.3, 0.5]
+
+  classifier_hidden_dim:
+    values: [128, 256, 512]
+
+  hidden_dim:
+    values: [128, 256]
+
+  patience:
+    value: 5
+
+  batch_size:
+    value: 128
+
+  num_epochs:
+    value: 30
+
+  bidirectional:
+    value: false
+
+command:
+  - uv
+  - run
+  - ${program}
+  - ${args}

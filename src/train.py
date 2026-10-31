@@ -9,6 +9,7 @@ import numpy as np
 
 from models.embedding_classifier import EmbeddingClassifier
 from models.lstm import LSTMClassifier
+from models.gru import GRUClassifier
 from data_loading import load_embeddings, load_data, collate_fn_classifier, collate_fn_lstm, collate_fn_lstm_pair
 
 embedding_dim = 300 
@@ -17,7 +18,7 @@ output_dim = 2
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--model", choices=["classifier", "lstm"],
+    parser.add_argument("--model", choices=["classifier", "lstm", "gru"],
                         default="classifier")
     parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--dropout", type=float, default=0.3)
@@ -94,7 +95,8 @@ def main(args):
             f"-seed{config.seed}"
         )
             
-        model = LSTMClassifier(
+        model_class = GRUClassifier if config.model == "gru" else LSTMClassifier
+        model = model_class(
             embedding_matrix,
             embedding_dim,
             config.hidden_dim,

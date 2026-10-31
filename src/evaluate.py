@@ -7,6 +7,7 @@ import wandb
 
 from models.embedding_classifier import EmbeddingClassifier
 from models.lstm import LSTMClassifier
+from models.gru import GRUClassifier
 from data_loading import (
     load_embeddings,
     load_data,
@@ -54,8 +55,9 @@ def build_model(config, embedding_matrix):
 
         collate_fn = collate_fn_classifier
 
-    elif config["model"] == "lstm":
-        model = LSTMClassifier(
+    elif config["model"] in ("lstm", "gru"):
+        model_class = GRUClassifier if config["model"] == "gru" else LSTMClassifier
+        model = model_class(
             embedding_matrix,
             EMBEDDING_DIM,
             config["hidden_dim"],
