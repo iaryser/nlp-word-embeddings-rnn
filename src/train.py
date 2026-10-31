@@ -212,6 +212,21 @@ def main(args):
     wandb.summary["valid_loss_at_best_accuracy"] = valid_loss_best_accuracy
     wandb.summary["best_valid_accuracy"] = best_valid_accuracy
     wandb.summary["best_epoch"] = best_epoch
+    
+    # Upload best checkpoint to W&B
+    artifact = wandb.Artifact(
+        name=f"model-{run.id}",
+        type="model",
+        metadata={
+            "best_valid_accuracy": best_valid_accuracy,
+            "best_epoch": best_epoch,
+            "seed": config.seed,
+        }
+    )
+
+    artifact.add_file(str(checkpoint_path))
+    run.log_artifact(artifact)
+
     wandb.finish()
 
 if __name__ == "__main__":
