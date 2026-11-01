@@ -19,7 +19,7 @@ WANDB_ENTITY=YOUR_WANDB_ENTITY
 WANDB_PROJECT=nlp-art-project-1
 ```
 
-The commands below load these settings with `--env-file .env` for both training and evaluation. You can choose your own project name. The `.env` file is ignored by Git.
+The commands below load these settings with `--env-file .env` for both training and evaluation. You can choose your own project name.
 
 The project uses CUDA 13.0 PyTorch wheels. Training automatically uses a CUDA GPU when available and otherwise runs on the CPU.
 
