@@ -1,5 +1,6 @@
 
 import argparse
+import os
 from pathlib import Path
 
 import torch
@@ -16,20 +17,12 @@ from data_loading import (
     collate_fn_rnn_pair,
 )
 
-PROJECT = "nlp-art-project-1"
 EMBEDDING_DIM = 300
 OUTPUT_DIM = 2
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--entity",
-        type=str,
-        required=True,
-        help="Your W&B entity (username or team)"
-    )
 
     parser.add_argument(
         "--run_ids",
@@ -115,6 +108,9 @@ def evaluate_model(model, test_loader, device):
 
 
 def main(args):
+    entity = os.environ["WANDB_ENTITY"]
+    project = os.environ["WANDB_PROJECT"]
+
     device = torch.device(
         "cuda" if torch.cuda.is_available() else "cpu"
     )
@@ -130,7 +126,7 @@ def main(args):
 
         # Retrieve the original training configuration
         training_run = api.run(
-            f"{args.entity}/{PROJECT}/{run_id}"
+            f"{entity}/{project}/{run_id}"
         )
 
         config = dict(training_run.config)
@@ -148,7 +144,7 @@ def main(args):
 
         # Download the corresponding model artifact
         artifact_name = (
-            f"{args.entity}/{PROJECT}/model-{run_id}:v0"
+            f"{entity}/{project}/model-{run_id}:v0"
         )
 
         artifact = api.artifact(artifact_name)
@@ -194,8 +190,8 @@ def main(args):
 
     # Log all evaluation results to a separate W&B run
     with wandb.init(
-        entity=args.entity,
-        project=PROJECT,
+        entity=entity,
+        project=project,
         job_type="evaluation",
         name="final-model-evaluation",
         config={"evaluated_run_ids": args.run_ids}

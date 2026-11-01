@@ -51,7 +51,6 @@ def main(args):
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     
     run = wandb.init(
-        project="nlp-art-project-1",
         id=args.run_id,
         config=vars(args)
     )

@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -17,15 +18,9 @@ def run_command(command):
     subprocess.run(command, cwd=ROOT, check=True)
 
 
-def preprocess(command):
-    if not command:
-        raise ValueError(
-            "Provide the preprocessing command using "
-            "--preprocess-command."
-        )
-
+def preprocess():
     print("\n=== PREPROCESSING ===")
-    run_command(shlex.split(command))
+    run_command([sys.executable, "src/preprocessing.py"])
 
 
 def load_model_configs():
@@ -69,13 +64,12 @@ def train_models():
     return run_ids
 
 
-def evaluate_models(entity, run_ids):
+def evaluate_models(run_ids):
     print("\n=== EVALUATING MODELS ===")
 
     command = [
         sys.executable,
         "src/evaluate.py",
-        "--entity", entity,
         "--run_ids", *run_ids,
     ]
 
@@ -92,20 +86,9 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--entity",
-        required=True,
-        help="W&B username or team"
-    )
-
-    parser.add_argument(
         "--run-ids",
         nargs="+",
         help="Existing W&B run IDs for evaluation"
-    )
-
-    parser.add_argument(
-        "--preprocess-command",
-        help="Command that runs the complete preprocessing pipeline"
     )
 
     return parser.parse_args()
@@ -113,6 +96,12 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    if not os.environ.get("WANDB_ENTITY") or not os.environ.get("WANDB_PROJECT"):
+        raise ValueError(
+            "Set WANDB_ENTITY and WANDB_PROJECT in .env and run with "
+            "uv run --env-file .env."
+        )
 
     if args.mode == "evaluate":
         expected_count = len(load_model_configs())
@@ -122,15 +111,15 @@ def main():
                 "to match final_models.json."
             )
 
-        evaluate_models(args.entity, args.run_ids)
+        evaluate_models(args.run_ids)
         return
 
     if args.mode == "full":
-        preprocess(args.preprocess_command)
+        preprocess()
 
     run_ids = train_models()
 
-    evaluate_models(args.entity, run_ids)
+    evaluate_models(run_ids)
 
     print("\n=== PIPELINE COMPLETED ===")
     print("Training run IDs:", *run_ids)
