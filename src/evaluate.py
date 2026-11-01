@@ -12,8 +12,8 @@ from data_loading import (
     load_embeddings,
     load_data,
     collate_fn_classifier,
-    collate_fn_lstm,
-    collate_fn_lstm_pair,
+    collate_fn_rnn,
+    collate_fn_rnn_pair,
 )
 
 PROJECT = "nlp-art-project-1"
@@ -33,9 +33,9 @@ def parse_args():
 
     parser.add_argument(
         "--run_ids",
-        nargs=3,
+        nargs="+",
         required=True,
-        help="Training run IDs of the three selected models"
+        help="Training run IDs of the selected models"
     )
 
     return parser.parse_args()
@@ -69,9 +69,9 @@ def build_model(config, embedding_matrix):
         )
 
         if config["input_mode"] == "single":
-            collate_fn = collate_fn_lstm
+            collate_fn = collate_fn_rnn
         elif config["input_mode"] == "pair":
-            collate_fn = collate_fn_lstm_pair
+            collate_fn = collate_fn_rnn_pair
         else:
             raise ValueError(
                 f"Unknown input mode: {config['input_mode']}"
@@ -135,7 +135,7 @@ def main(args):
 
         config = dict(training_run.config)
 
-        print(f"\nEvaluating model {index}/3")
+        print(f"\nEvaluating model {index}/{len(args.run_ids)}")
         print(f"Training run: {training_run.name}")
 
         # Reconstruct model and select the correct collate function

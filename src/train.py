@@ -10,7 +10,7 @@ import numpy as np
 from models.embedding_classifier import EmbeddingClassifier
 from models.lstm import LSTMClassifier
 from models.gru import GRUClassifier
-from data_loading import load_embeddings, load_data, collate_fn_classifier, collate_fn_lstm, collate_fn_lstm_pair
+from data_loading import load_embeddings, load_data, collate_fn_classifier, collate_fn_rnn, collate_fn_rnn_pair
 
 embedding_dim = 300 
 output_dim = 2
@@ -109,9 +109,9 @@ def main(args):
         model = model.to(device)
         
         if config.input_mode == "single":
-            collate_fn = collate_fn_lstm
+            collate_fn = collate_fn_rnn
         else:
-            collate_fn = collate_fn_lstm_pair
+            collate_fn = collate_fn_rnn_pair
         
     
     train_loader = load_data("Train", config.batch_size, collate_fn)

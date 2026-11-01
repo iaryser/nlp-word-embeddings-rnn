@@ -37,7 +37,7 @@ def collate_fn_classifier(batch):
     return padded
 
 
-def collate_fn_lstm_pair(batch):
+def collate_fn_rnn_pair(batch):
     sequences_1 = []
     sequences_2 = []
     
@@ -86,7 +86,7 @@ def collate_fn_lstm_pair(batch):
     }
         
 
-def collate_fn_lstm(batch):
+def collate_fn_rnn(batch):
     sequences = []
     for sample in batch:
         sequence = (
@@ -98,7 +98,7 @@ def collate_fn_lstm(batch):
         
         sequences.append(torch.tensor(sequence, dtype=torch.long))
     
-    #Actual lengths of each sequence (for LSTM)
+    # Actual lengths of each sequence for the RNN
     lengths = torch.tensor([len(seq) for seq in sequences])    
     
     padded = pad_sequence(
@@ -134,6 +134,6 @@ def load_data(type: str, batch_size: int, collate_fn):
     )
 
 if __name__ == "__main__":
-    train_loader = load_data("Train", 64, collate_fn_concatenated_lstm)
+    train_loader = load_data("Train", 64, collate_fn_rnn)
     for batch in train_loader:
         break

@@ -115,9 +115,11 @@ def main():
     args = parse_args()
 
     if args.mode == "evaluate":
-        if not args.run_ids or len(args.run_ids) != 3:
+        expected_count = len(load_model_configs())
+        if not args.run_ids or len(args.run_ids) != expected_count:
             raise ValueError(
-                "Evaluation requires exactly three run IDs."
+                f"Evaluation requires exactly {expected_count} run IDs "
+                "to match final_models.json."
             )
 
         evaluate_models(args.entity, args.run_ids)
@@ -127,11 +129,6 @@ def main():
         preprocess(args.preprocess_command)
 
     run_ids = train_models()
-
-    if len(run_ids) != 3:
-        raise ValueError(
-            "The current evaluation script expects three models."
-        )
 
     evaluate_models(args.entity, run_ids)
 
