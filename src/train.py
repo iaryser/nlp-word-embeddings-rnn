@@ -10,10 +10,7 @@ import numpy as np
 from models.embedding_classifier import EmbeddingClassifier
 from models.lstm import LSTMClassifier
 from models.gru import GRUClassifier
-from data_loading import (
-    load_embeddings, load_data, collate_fn_classifier, collate_fn_classifier_pair,
-    collate_fn_lstm, collate_fn_lstm_pair,
-)
+from data_loading import load_embeddings, load_data, collate_fn_classifier, collate_fn_lstm, collate_fn_lstm_pair
 
 embedding_dim = 300 
 output_dim = 2
@@ -36,20 +33,11 @@ def parse_args():
         type=lambda x: x.lower() == "true",
         default=True
     )
-    parser.add_argument(
-        "--input_mode", choices=["joint", "single", "pair"], default=None,
-        help="Classifier: joint (default) or pair; LSTM/GRU: single (default) or pair"
-    )
+    parser.add_argument("--input_mode", type=str, default="single")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--run_id", type=str, default=None)
 
-    args = parser.parse_args()
-    if args.input_mode is None:
-        args.input_mode = "joint" if args.model == "classifier" else "single"
-    valid_modes = ("joint", "pair") if args.model == "classifier" else ("single", "pair")
-    if args.input_mode not in valid_modes:
-        parser.error(f"--input_mode for {args.model} must be one of {valid_modes}")
-    return args
+    return parser.parse_args()
 
 def main(args):
     seed = args.seed
@@ -78,7 +66,6 @@ def main(args):
     if config.model == 'classifier':
         run.name = (
             f"{config.model}"
-            f"-input_mode{config.input_mode}"
             f"-lr{config.learning_rate}"
             f"-drop{config.dropout}"
             f"-hidden{config.classifier_hidden_dim}"
@@ -90,12 +77,11 @@ def main(args):
             embedding_dim * 4,
             config.classifier_hidden_dim,
             output_dim,
-            config.dropout,
-            input_mode=config.input_mode
+            config.dropout
         )
         model = model.to(device)
         
-        collate_fn = collate_fn_classifier_pair if config.input_mode == "pair" else collate_fn_classifier
+        collate_fn = collate_fn_classifier
 
     else:
         run.name = (
@@ -239,7 +225,6 @@ def main(args):
             "best_valid_accuracy": best_valid_accuracy,
             "best_epoch": best_epoch,
             "seed": config.seed,
-            "input_mode": config.input_mode,
         }
     )
 

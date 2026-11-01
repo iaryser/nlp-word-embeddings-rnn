@@ -12,7 +12,6 @@ from data_loading import (
     load_embeddings,
     load_data,
     collate_fn_classifier,
-    collate_fn_classifier_pair,
     collate_fn_lstm,
     collate_fn_lstm_pair,
 )
@@ -46,19 +45,15 @@ def build_model(config, embedding_matrix):
     """Reconstruct the model using its original training config."""
 
     if config["model"] == "classifier":
-        input_mode = config.get("input_mode", "joint")
-        if input_mode == "single":
-            input_mode = "joint"
         model = EmbeddingClassifier(
             embedding_matrix,
             EMBEDDING_DIM * 4,
             config["classifier_hidden_dim"],
             OUTPUT_DIM,
-            config["dropout"],
-            input_mode=input_mode
+            config["dropout"]
         )
 
-        collate_fn = collate_fn_classifier_pair if input_mode == "pair" else collate_fn_classifier
+        collate_fn = collate_fn_classifier
 
     elif config["model"] in ("lstm", "gru"):
         model_class = GRUClassifier if config["model"] == "gru" else LSTMClassifier

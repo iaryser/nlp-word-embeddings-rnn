@@ -37,33 +37,6 @@ def collate_fn_classifier(batch):
     return padded
 
 
-def collate_fn_classifier_pair(batch):
-    """Build padded O1 + H + O2 candidates without separator tokens."""
-    padded = {}
-
-    for candidate in (1, 2):
-        sequences = [
-            torch.tensor(
-                sample["observation_1"]
-                + sample[f"hypothesis_{candidate}"]
-                + sample["observation_2"],
-                dtype=torch.long
-            )
-            for sample in batch
-        ]
-        padded[f"sequence_{candidate}"] = pad_sequence(
-            sequences,
-            batch_first=True,
-            padding_value=PAD_TOKEN
-        )
-
-    padded["labels"] = torch.tensor(
-        [sample["label"] for sample in batch],
-        dtype=torch.long
-    )
-    return padded
-
-
 def collate_fn_lstm_pair(batch):
     sequences_1 = []
     sequences_2 = []

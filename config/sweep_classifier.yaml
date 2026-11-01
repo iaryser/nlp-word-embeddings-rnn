@@ -12,9 +12,6 @@ parameters:
   model:
     value: classifier
 
-  input_mode:
-    values: [joint, pair]
-
   learning_rate:
     values: [1e-5, 1e-4, 1e-3]
 
