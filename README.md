@@ -36,7 +36,9 @@ The GRU outperformed the embedding classifier on both validation and test data, 
 
 Both models were trained using the Adam optimizer and random seed 42, with a maximum of 30 epochs.
 
-The complete configurations are available in [final_models.json](final_models.json). Training metrics, hyperparameter experiments, and model checkpoints are documented in the [W&B saved workspace](https://forge.coreweave.com/wandb/nlp-hs26-timo-ryser/nlp-art-project-1/workspace?nw=cehfc3y1vkuL).
+The complete configurations are available in [final_models.json](final_models.json). Training metrics, hyperparameter experiments, and model checkpoints are documented in the [W&B saved workspace](https://forge.coreweave.com/wandb/nlp-hs26-timo-ryser/nlp-art-project-1/workspace?nw=cehfc3y1vku).
+
+
 
 ## Setup
 
